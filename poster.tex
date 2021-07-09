@@ -79,7 +79,8 @@
     For a random variable \(z\) with a given distribution \(z \sim \pi(z)\), and an invertible function \(x = f(z)\) with
     \(z = f^{-1}(x)\), we can write
     \begin{equation}
-      p(x) = \pi(z)\left|\det \frac{dz}{dx}\right| = \pi(f^{-1}(x))\left|\det \frac{\partial f^{-1}}{\partial x}\right|
+      p(x) = \pi(z)\left|\det \frac{dz}{dx}\right|%
+        = \pi(f^{-1}(x))\left|\det\frac{\partial f^{-1}}{\partial x}\right|
     \end{equation}
 
     \begin{figure}
@@ -89,7 +90,7 @@
     \end{figure}
 
     We can construct a \emph{normalizing flow} by applying a collection of invertible functions \(f_1, f_2, \ldots,
-    f_K\) sequentially, as shown in \ref{fig:nflow}
+    f_K\) sequentially, as shown in \ref{fig:nflow}.
 
     \begin{figure}
       \centering
@@ -100,28 +101,72 @@
 
   \end{block}
 
-  \begin{alertblock}{A highlighted block}
+  \begin{alertblock}{Hamiltonian Monte Carlo (HMC)}
+    % \begin{itemize}
+    % \section{Goal}
+    \textbf{Goal:} Sample from (difficult) target distribution \(p(x)\propto e^{-S(x)}\). To do this, we
+      construct a chain \(x_{0}\rightarrow x_{1}\rightarrow, \ldots, \rightarrow x_{N}\) such that \(x_{N}\sim p(x)\)
+      as \(N\rightarrow \infty\).\\
+    \vspace{\baselineskip}
 
-    This block catches your eye, so \textbf{important stuff} should probably go
-    here.
+    \textbf{Method:}
+      \begin{enumerate}
+        \item Introduce \(v \sim \mathcal{N}(0, \mathbb{I}_{n})\in \mathbb{R}^{n}\) and write the joint distribution:
+          \begin{equation}
+            p(x, v) = p(x) p(v)\propto e^{-S(x)}e^{-\frac{1}{2}v^{T}v} = e^{-H(x, v)}
+          \end{equation}
+        \item Evolve the joint system \(\dot x = \frac{\partial H}{\partial v}\), \(\dot v = -\frac{\partial
+          H}{\partial x}\) using the \emph{leapfrog integrator} along \(H = \mathrm{const}\), i.e. \(\xi \equiv (x,
+          v)\rightarrow (x', v') = \xi'\)
+        \item Accept or reject the proposal configuration \(\xi'\) using the Metropolis-Hastings test.
+      \end{enumerate}
+    % \vspace{\baselineskip}
+  \vspace{\baselineskip}
+  \begin{columns}[t]
+    \separatorcolumn
+    \begin{column}{0.4\columnwidth}
+      \textbf{Leapfrog integrator:}
+      \begin{enumerate}
+        \item Half-step (\(v\)): \(\tilde v = v - \frac{\varepsilon}{2}\partial_{x} S(x)\)
+        \item Full-step (\(x\)): \(x' = x + \varepsilon \tilde v\)
+        \item Half-step (\(v\)): \(v' = \tilde v - \frac{\varepsilon}{2} \partial_{x} S(x')\)
+      \end{enumerate}
+    \end{column}
+    \begin{column}{0.6\columnwidth}
+      \textbf{Metropolis-Hastings:}
+      \begin{equation}
+        x_{i+1} = \begin{cases}
+          x'\quad\text{w/ probability}\quad A(\xi'|\xi)\\
+          x\quad\text{w/ probability}\quad \min\left\{1,\frac{p(\xi')}{p(\xi)}\left|\frac{\partial \xi'}{\partial
+          \xi^{T}}\right|\right\}
+        \end{cases}
+      \end{equation}
+    \end{column}
+  \end{columns}
 
-    Curabitur eu libero vehicula, cursus est fringilla, luctus est. Morbi
-    consectetur mauris quam, at finibus elit auctor ac. Aliquam erat volutpat.
-    Aenean at nisl ut ex ullamcorper eleifend et eu augue. Aenean quis velit
-    tristique odio convallis ultrices a ac odio.
 
-    \begin{itemize}
-      \item \textbf{Fusce dapibus tellus} vel tellus semper finibus. In
-        consequat, nibh sed mattis luctus, augue diam fermentum lectus.
-      \item \textbf{In euismod erat metus} non ex. Vestibulum luctus augue in
-        mi condimentum, at sollicitudin lorem viverra.
-      \item \textbf{Suspendisse vulputate} mauris vel placerat consectetur.
-        Mauris semper, purus ac hendrerit molestie, elit mi dignissim odio, in
-        suscipit felis sapien vel ex.
-    \end{itemize}
+    % \end{itemize}
 
-    Aenean tincidunt risus eros, at gravida lorem sagittis vel. Vestibulum ante
-    ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae.
+    % This block catches your eye, so \textbf{important stuff} should probably go
+    % here.
+    %
+    % Curabitur eu libero vehicula, cursus est fringilla, luctus est. Morbi
+    % consectetur mauris quam, at finibus elit auctor ac. Aliquam erat volutpat.
+    % Aenean at nisl ut ex ullamcorper eleifend et eu augue. Aenean quis velit
+    % tristique odio convallis ultrices a ac odio.
+    %
+    % \begin{itemize}
+    %   \item \textbf{Fusce dapibus tellus} vel tellus semper finibus. In
+    %     consequat, nibh sed mattis luctus, augue diam fermentum lectus.
+    %   \item \textbf{In euismod erat metus} non ex. Vestibulum luctus augue in
+    %     mi condimentum, at sollicitudin lorem viverra.
+    %   \item \textbf{Suspendisse vulputate} mauris vel placerat consectetur.
+    %     Mauris semper, purus ac hendrerit molestie, elit mi dignissim odio, in
+    %     suscipit felis sapien vel ex.
+    % \end{itemize}
+    %
+    % Aenean tincidunt risus eros, at gravida lorem sagittis vel. Vestibulum ante
+    % ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae.
 
   \end{alertblock}
 
