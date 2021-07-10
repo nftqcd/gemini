@@ -85,8 +85,8 @@
 
     \begin{figure}
       \centering
-      \includegraphics[width=0.9\columnwidth]{assets/flow_model.jpg}
-      \caption{Using a Flow to generate data \(x'\). Image from~\cite{weng2018flow}}
+      \includegraphics[width=0.8\columnwidth]{assets/flow_model2}
+      \caption{Using a Flow to generate data \(x'\). Image adapted from~\cite{weng2018flow}}
     \end{figure}
 
     We can construct a \emph{normalizing flow} by applying a collection of invertible functions \(f_1, f_2, \ldots,
@@ -94,7 +94,7 @@
 
     \begin{figure}
       \centering
-      \includegraphics[width=0.9\columnwidth]{assets/normalizing-flow.png}
+      \includegraphics[width=0.8\columnwidth]{assets/normalizing-flow.png}
       \caption{\label{fig:nflow}Illustration of a normalizing flow model which maps the initial distribution \(p_{0}(z_{0})\) to the
       final distribution \(p_{K}(z_{k})\). Figure from~\cite{weng2018flow}}
     \end{figure}
@@ -102,14 +102,12 @@
   \end{block}
 
   \begin{alertblock}{Hamiltonian Monte Carlo (HMC)}
-    % \begin{itemize}
-    % \section{Goal}
-    \textbf{Goal:} Sample from (difficult) target distribution \(p(x)\propto e^{-S(x)}\). To do this, we
+    \heading{Goal}
+    Sample from (difficult) target distribution \(p(x)\propto e^{-S(x)}\). To do this, we
       construct a chain \(x_{0}\rightarrow x_{1}\rightarrow, \ldots, \rightarrow x_{N}\) such that \(x_{N}\sim p(x)\)
-      as \(N\rightarrow \infty\).\\
-    \vspace{\baselineskip}
+      as \(N\rightarrow \infty\).
 
-    \textbf{Method:}
+    \heading{Method}
       \begin{enumerate}
         \item Introduce \(v \sim \mathcal{N}(0, \mathbb{I}_{n})\in \mathbb{R}^{n}\) and write the joint distribution:
           \begin{equation}
@@ -120,27 +118,27 @@
           v)\rightarrow (x', v') = \xi'\)
         \item Accept or reject the proposal configuration \(\xi'\) using the Metropolis-Hastings test.
       \end{enumerate}
-    % \vspace{\baselineskip}
-  \vspace{\baselineskip}
+
   \begin{columns}[t]
     \separatorcolumn
-    \begin{column}{0.4\columnwidth}
-      \textbf{Leapfrog integrator:}
+    \begin{column}{0.35\columnwidth}
+      \heading{Leapfrog Integrator}
       \begin{enumerate}
         \item Half-step (\(v\)): \(\tilde v = v - \frac{\varepsilon}{2}\partial_{x} S(x)\)
         \item Full-step (\(x\)): \(x' = x + \varepsilon \tilde v\)
         \item Half-step (\(v\)): \(v' = \tilde v - \frac{\varepsilon}{2} \partial_{x} S(x')\)
       \end{enumerate}
     \end{column}
-    \begin{column}{0.6\columnwidth}
-      \textbf{Metropolis-Hastings:}
-      \begin{equation}
+
+    \begin{column}{0.65\columnwidth}
+      \heading{Metropolis-Hastings}
+      \begin{equation*}
         x_{i+1} = \begin{cases}
           x'\quad\text{w/ probability}\quad A(\xi'|\xi)\\
           x\quad\text{w/ probability}\quad \min\left\{1,\frac{p(\xi')}{p(\xi)}\left|\frac{\partial \xi'}{\partial
           \xi^{T}}\right|\right\}
         \end{cases}
-      \end{equation}
+      \end{equation*}
     \end{column}
   \end{columns}
 
@@ -176,7 +174,13 @@
 
 \begin{column}{\colwidth}
 
-  \begin{block}{A block containing an enumerated list}
+  \begin{block}{HMC with Normalizing Flow}
+
+    \begin{figure}
+      \centering
+      \includegraphics[width=\columnwidth]{assets/ftHMC}
+      \caption{Normalizing Flow with inner HMC block.}
+    \end{figure}
 
     Vivamus congue volutpat elit non semper. Praesent molestie nec erat ac
     interdum. In quis suscipit erat. \textbf{Phasellus mauris felis, molestie
