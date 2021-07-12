@@ -19,6 +19,7 @@
 \newfontfamily\Lato[Ligatures=TeX]{Lato}
 
 \usefonttheme{professionalfonts}
+\useinnertheme{circles}
 
 \setsansfont{Lato}[
   UprightFont=*-Light,
@@ -55,25 +56,23 @@
 \makeatother
 
 % Itemize
-
 \setbeamertemplate{itemize item}{\raise0.5ex \hbox{\vrule width 0.5ex height 0.5ex}}
 \setbeamertemplate{itemize subitem}{\raise0.3ex \hbox{\vrule width 0.5ex height 0.5ex}}
 \setbeamertemplate{itemize subsubitem}{\raise0.2ex \hbox{\vrule width 0.5ex height 0.5ex}}
 
 % Enumerate
-
 \setbeamertemplate{enumerate item}{\insertenumlabel.}
 \setbeamertemplate{enumerate subitem}{\insertsubenumlabel.}
 \setbeamertemplate{enumerate subsubitem}{\insertsubsubenumlabel.}
 
 % Equation
-\setlength\belowdisplayshortskip{2ex}
+\setlength\belowdisplayshortskip{1.5ex}
 
 % Caption
 \setbeamertemplate{caption}[numbered]
 \setbeamertemplate{caption label separator}[period]
 \setlength{\abovecaptionskip}{2ex}
-\setlength{\belowcaptionskip}{1ex}
+\setlength{\belowcaptionskip}{2ex}
 
 % Bibliography
 \setbeamertemplate{bibliography item}[text]

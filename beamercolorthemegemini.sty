@@ -5,12 +5,30 @@
 % Definitions
 % ====================
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % \definecolor{lightgray}{RGB}{245, 246, 250}
-% \definecolor{blue}{RGB}{64, 115, 158}
+% \definecolor{lightgray}{RGB}{245, 246, 250}
+% \definecolor{lightgray}{HTML}{EDF1F5}     % #EDF1F5
 % \definecolor{darkblue}{RGB}{39, 60, 117}
+% \definecolor{darkblue}{HTML}{175A86}      % #175A86
+% \definecolor{darkblue}{HTML}{142E57}    % #142E57
+% \definecolor{darkblue}{HTML}{122F57}      % #122F57
+% \definecolor{blue}{RGB}{64, 115, 158}
+% \definecolor{blue}{HTML}{0096D4}          % #0096D4
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\definecolor{shade}{HTML}{EDF1F5}     % #EDF1F5
+\definecolor{bluealt}{HTML}{5D869F}       % #5D869F
+\definecolor{bluegray}{HTML}{DBEFEB}      % #DBEFEB
+\definecolor{pink}{HTML}{FF005B}          % #FF005B
+\definecolor{red}{HTML}{FA5252}           % #FA5252
+% ------------------------------
 \definecolor{lightgray}{RGB}{245, 246, 250}
-\definecolor{darkblue}{HTML}{142E57}    % #142E57
-\definecolor{blue}{HTML}{0096D4}        % #0096D4
+\definecolor{lightblue}{HTML}{AED7EE}     % #AED7EE
+\definecolor{blue}{HTML}{0096D4}          % #0096D4
+\definecolor{dblue}{HTML}{022336}         % #007CB1
+\definecolor{darkblue}{HTML}{00628C}      % #00628C 
+\definecolor{darkerblue}{HTML}{014464}   % #014464
 
 % ====================
 % Theme
@@ -25,7 +43,7 @@
 
 % Headline
 \setbeamercolor{headline}{fg=lightgray,bg=blue}
-\setbeamercolor{headline rule}{bg=darkblue}
+\setbeamercolor{headline rule}{bg=darkerblue}
 
 % Block
 \setbeamercolor{block title}{fg=blue,bg=white}
@@ -37,11 +55,19 @@
 \setbeamercolor{block alerted separator}{bg=black}
 \setbeamercolor{block alerted body}{fg=black,bg=lightgray}
 
+% Example block
+\setbeamercolor{block example title}{fg=blue,bg=lightblue}
+\setbeamercolor{block example separator}{bg=black}
+\setbeamercolor{block example body}{fg=black,bg=lightblue}
+
 % Heading
-\setbeamercolor{heading}{fg=black}
+\setbeamercolor{heading}{fg=darkblue}
 
 % Itemize
-\setbeamercolor{item}{fg=darkblue}
+\setbeamercolor{item}{fg=darkerblue}
+
+% Alerted text
+\setbeamercolor{alerted text}{fg=darkblue,bg=white}
 
 % Bibliography
 \setbeamercolor{bibliography item}{fg=black}

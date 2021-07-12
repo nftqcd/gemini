@@ -16,6 +16,9 @@
 \usepackage{booktabs}
 \usepackage{tikz}
 \usepackage{pgfplots}
+\usepackage{wrapfig}
+\usepackage{mathtools}
+\pgfplotsset{compat=1.17}
 \graphicspath{{assets/}}
 
 % ====================
@@ -30,6 +33,16 @@
 \setlength{\colwidth}{0.3\paperwidth}
 
 \newcommand{\separatorcolumn}{\begin{column}{\sepwidth}\end{column}}
+
+% Logo
+% \addtobeamertemplate{headline}{}
+% {
+%     \begin{tikzpicture}[remember picture,overlay]
+%     \node [anchor=north east, inner sep=3cm] at ([xshift=1.4cm,yshift=1.3cm]current page.north east)
+%       {\includegraphics[height=2.5cm]{assets/anl_logo.svg}};
+%     \end{tikzpicture}
+% }
+
 
 % ====================
 % Title
@@ -76,29 +89,201 @@
 \begin{column}{\colwidth}
 
   \begin{block}{Normalizing Flows}
-    For a random variable \(z\) with a given distribution \(z \sim \pi(z)\), and an invertible function \(x = f(z)\) with
-    \(z = f^{-1}(x)\), we can write
+    For a random variable \(z\) with a given distribution \(z \sim r(z)\), and an invertible function \(x = f(z)\) with
+    \(z = f^{-1}(x)\), we can use the change of variables formula to write
+    %
     \begin{equation}
-      p(x) = \pi(z)\left|\det \frac{dz}{dx}\right|%
-        = \pi(f^{-1}(x))\left|\det\frac{\partial f^{-1}}{\partial x}\right|
+      p(x) = r(z)\left|\det{\frac{\partial z}{\partial x}}\right|
+           = r{(f^{-1}(x))}\left|\det{\frac{\partial f^{-1}}{\partial x}}\right|
+        %   r(z) = p(x)\left|\det{\frac{dx}{dz}}\right|^{-1}
+        %   = p(f(z))\left|\det{\frac{\partial f}{\partial z}}\right|^{-1}
     \end{equation}
-
+    Where \(r(z)\) is the (simple) prior density, and our goal is to generate independent samples from the (difficult)
+    target distribution \(p(x)\).
+    %
+    This can be done using \emph{normalizing flows} to construct a model density \(q(x)\) that approximates the target
+    distribution, i.e. \(q(\cdot)\approx p(\cdot)\) for a suitably-chosen flow \(f\).
+    %
     \begin{figure}
       \centering
-      \includegraphics[width=0.8\columnwidth]{assets/flow_model2}
+      \includegraphics[width=0.9\columnwidth]{assets/flow_model5}
       \caption{Using a Flow to generate data \(x'\). Image adapted from~\cite{weng2018flow}}
     \end{figure}
+    %
 
-    We can construct a \emph{normalizing flow} by applying a collection of invertible functions \(f_1, f_2, \ldots,
-    f_K\) sequentially, as shown in \ref{fig:nflow}.
+    We can construct a normalizing flow by composing multiple invertible flows so that \(x\equiv [f_1\circ f_{2}\circ
+    \cdots \circ f_{K}](z)\).
+    %
+    In practice, the function \(f\) is usually composed of multiple \emph{coupling layers}, which update an ``active''
+    subset of the variables, conditioned on the complimentary ``frozen'' variables.
+    %
+    By sequentially updating alternating subsets of the variables in each coupling layer, we can ensure that all
+    variables are updated during the course of the flow.
+    %
+    \heading{Affine Coupling Layers}
+    A particularly useful template function for constructing our normalizing flow is the affine coupling layer which is
+    defined as 
+    %
+    \begin{align}
+      f(x_{1}, x_{2}) &= \left(e^{s(x_{2})} x_{1} + t(x_{2}),\, x_{2}\right),%
+        \quad\quad\text{with}\quad \log J(x) = \sum_{k}[s(x_{2})]_{k} \\
+      f^{-1}(x'_{1}, x'_{2}) &= \left((x'_{1}-t(x'_{2}))e^{-s(x'_{2})},\, x'_{2}\right)%
+        \quad\text{with}\quad \log J(x') = \sum_{k}-[s(x'_{2})]_{k}
+    \end{align}
+    %
+    where \(s(x_{2})\) and \(t(x_{2})\) are of the same dimensionality as \(x_{1}\) and the functions act elementwise on
+    the inputs.
 
+    In order to effectively draw samples from the correct target distribution \(p(\cdot)\), our goal is to minimize the
+    error introduced by approximating \(q(\cdot) \approx p(\cdot)\).
+    %
+    To do so, we use the (reverse) Kullback-Leibler (KL) divergence from Eq.~\ref{eq:kldiv}, which is minimized when \(p
+    = q\).
+    %
+    \begin{align}
+      D_{\mathrm{KL}}(q||p) 
+        &\equiv \int dy\, q(y)[\log q(y) - \log p(y)]\\
+        &\approx \frac{1}{N} \sum_{i=1}^{N} \,[\log q(y_{i}) - \log p(y_{i})]\quad\text{where}\quad y_{i}\sim q.
+        \label{eq:kldiv}
+    \end{align}
+
+    % We define the \emph{effective sample size} (ESS) for a batch of samples \(x_{i}\) as
+    % %
+    % \begin{equation}
+    %   \mathrm{ESS} = \frac{\left(\frac{1}{N}\sum_{i} p(x_{i}) / q(x_{i})\right)^{2}}%
+    %   {\frac{1}{N}\sum_{i}\left(p(x_{i})/q(x_{i})\right)^{2}} \in [0, 1],
+    % \end{equation}
+    % %
+    % which provides a measure of correlations between samples in our batch, and a value of \(1\) implies complete
+    % independence.
+
+
+  \end{block}
+
+\end{column}
+
+\separatorcolumn
+
+\begin{column}{\colwidth}
+
+  \begin{block}{Trivializing Map}
+    %
     \begin{figure}
       \centering
-      \includegraphics[width=0.8\columnwidth]{assets/normalizing-flow.png}
-      \caption{\label{fig:nflow}Illustration of a normalizing flow model which maps the initial distribution \(p_{0}(z_{0})\) to the
-      final distribution \(p_{K}(z_{k})\). Figure from~\cite{weng2018flow}}
+      \includegraphics[width=\columnwidth]{assets/ftHMC}
+      \caption{\label{fig:ftHMC}Normalizing Flow with inner HMC block.}
     \end{figure}
+    %
+    Our goal is to evaluate expectation values of the form
 
+    \begin{equation}
+      \langle \mathcal{O}\rangle = \frac{1}{\mathcal{Z}}\int dx \,\mathcal{O}(x) e^{-S(x)}
+      % \langle \mathcal{O}\rangle = \frac{1}{\mathcal{Z}}\int dz \,\mathcal{O}(z) e^{-S_{\beta}(z)}
+      \label{eq:expval}
+    \end{equation}.
+
+    Using a normalizing flow, we can perform a change of variables \(x = f(z)\) so Eq.~\ref{eq:expval} becomes 
+
+    \begin{align}
+      \langle \mathcal{O}\rangle 
+        &= \frac{1}{\mathcal{Z}}\int dz\, |\det[J(z)]|\, \mathcal{O}(f(z))\,
+        e^{-S(f(z))}, \quad\text{where}\quad J(z) = \frac{\partial f(z)}{\partial z} \\
+        &= \frac{1}{\mathcal{Z}}\int dz \mathcal{O}(f(z)) e^{-S(f(z)) + \log|\det[J(z)]|}.
+      \label{eq:expval_modified}
+    \end{align}
+
+    The Jacobian matrix \(J(z)\) must satisfy
+
+    \begin{enumerate}
+      \item Injective (1-to-1) between domains of integration
+      \item Continuously differentiable (\emph{or}, differentiable with continuous inverse).
+    \end{enumerate}
+
+    The function \(f\) is a \emph{trivializing map} when \(S(f(z)) - \log|\det J(z)| = \text{const.}\), and our
+    expectation value simplifies to 
+
+    \begin{equation}
+      \langle \mathcal{O}\rangle = \frac{1}{\mathcal{Z}}\int dz\, \mathcal{O}(f(z)).
+    \end{equation}
+
+  % \end{block}
+  % \begin{block}{HMC with Normalizing Flow}
+    \heading{HMC with Normalizing Flows}
+    We can implement the trivializing map defined above using a normalizing flow model.
+    %
+    For conjugate momenta \(\pi\), we can write the Hamiltonian 
+    \begin{equation}
+      H(z, \pi) = \frac{1}{2}\pi^{2} + S(f(z)) - \log|\det J(f(z))|
+    \end{equation}
+    and the associated equations of motion as 
+    \begin{align}
+      \dot{\pi} &= -\frac{\partial H}{\partial z} = -J(z) S'(f(z)) - \log|\det J(z)|\\
+      \dot z &= \frac{\partial H}{\partial z} = \pi
+    \end{align}
+    %
+    If we introduce a change of variables \(\pi = J(z)\rho = J(f^{-1}(x))\rho\) and \(z = f^{-1}(x)\), the determinant
+    of the Jacobian matrix reduces to \(1\) and we obtain the modified Hamiltonian
+    %
+    \begin{equation}
+      \tilde H(x,\rho) = \frac{1}{2}\rho^{\dagger}\rho + S(x) - \log|\det J|.
+    \end{equation}
+
+    As shown in Fig.~\ref{fig:ftHMC}, we can use \(f^{-1}: z\rightarrow x \) to perform HMC updates on the transformed
+    variables \(x\), and \(f: x\rightarrow z\) to recover the physical target distribution.
+
+    % We can use the trained flow model together with the HMC algorithm by
+    % performing the leapfrog updates in the
+    % transformed space by first transforming our initial state,
+    % x_{0} \xrightarrow[]{f} z_{0} \xrightarrow[]{\text{HMC}} z_{1} \xrightarrow[]{\text{HMC}} z_{2}%
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % \begin{equation}
+    %   f: x_{0}\rightarrow z_{0} \xrightarrow[]{\text{HMC}} z_{1} \xrightarrow[]{\text{HMC}} z_{2}%
+    %   \rightarrow \ldots \rightarrow z_{N}
+    % \end{equation}
+    % and using the inverse to transform back to physical space, \(f^{-1}: z_{N}\rightarrow x_{N}\), as shown in
+    % Figure~\ref{fig:ftHMC}.
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % \begin{figure}
+    %   \centering
+    %   \includegraphics[width=\columnwidth]{assets/ftHMC}
+    %   \caption{\label{fig:ftHMC}Normalizing Flow with inner HMC block.}
+    % \end{figure}
+  \end{block}
+
+\end{column}
+
+\separatorcolumn
+
+\begin{column}{\colwidth}
+
+  \begin{block}{2D U(1) Gauge Theory}
+    \begin{wrapfigure}{l}{.33\columnwidth}
+      \includegraphics[width=0.33\columnwidth]{assets/plaq.pdf}
+      \caption{\label{fig:plaquette}Plaquette}%, \(P\)}
+    \end{wrapfigure}
+    Let \(U_{\mu}(n) = e^{i x_{\mu}(n)} \in U(1)\), with \(x_{\mu}(n) \in \left[-\pi, \pi\right]\) denote the \emph{link
+    variables}, where \(x_{\mu}(n)\) is a link at the site \(n\) oriented in the direction \(\hat\mu\).
+
+    We can write our target distribution, \(p(x)\), in terms of the Wilson action \(S(x)\) as
+    %
+    \begin{equation}
+      p(x)\propto e^{- S(x)}, \quad \text{where}\quad S(x) \equiv \sum_{P} 1 - \cos x_{P}
+    \end{equation}
+    %
+    and
+    %
+    \begin{equation}
+      x_{P} = x_{\mu}(n) + x_{\nu}(n+\hat{\mu})-x_{\mu}(n+\hat{\nu}) - x_{\nu}(n)
+    \end{equation}
+    %
+    as shown in Figure.~\ref{fig:plaquette}.
+
+    For a given lattice configuration, we can define the \emph{topological charge} \(Q \in \mathbb{Z}\) as
+    %
+    \begin{equation}
+      Q = \frac{1}{2\pi}\sum_{P} \arg(x_{P}), \quad\text{where}\quad \arg(x_{P}) \in [-\pi,\pi]
+    \end{equation}
   \end{block}
 
   \begin{alertblock}{Hamiltonian Monte Carlo (HMC)}
@@ -141,214 +326,28 @@
       \end{equation*}
     \end{column}
   \end{columns}
-
-
-    % \end{itemize}
-
-    % This block catches your eye, so \textbf{important stuff} should probably go
-    % here.
-    %
-    % Curabitur eu libero vehicula, cursus est fringilla, luctus est. Morbi
-    % consectetur mauris quam, at finibus elit auctor ac. Aliquam erat volutpat.
-    % Aenean at nisl ut ex ullamcorper eleifend et eu augue. Aenean quis velit
-    % tristique odio convallis ultrices a ac odio.
-    %
-    % \begin{itemize}
-    %   \item \textbf{Fusce dapibus tellus} vel tellus semper finibus. In
-    %     consequat, nibh sed mattis luctus, augue diam fermentum lectus.
-    %   \item \textbf{In euismod erat metus} non ex. Vestibulum luctus augue in
-    %     mi condimentum, at sollicitudin lorem viverra.
-    %   \item \textbf{Suspendisse vulputate} mauris vel placerat consectetur.
-    %     Mauris semper, purus ac hendrerit molestie, elit mi dignissim odio, in
-    %     suscipit felis sapien vel ex.
-    % \end{itemize}
-    %
-    % Aenean tincidunt risus eros, at gravida lorem sagittis vel. Vestibulum ante
-    % ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae.
-
   \end{alertblock}
-
-\end{column}
-
-\separatorcolumn
-
-\begin{column}{\colwidth}
-
-  \begin{block}{HMC with Normalizing Flow}
-
-    \begin{figure}
-      \centering
-      \includegraphics[width=\columnwidth]{assets/ftHMC}
-      \caption{Normalizing Flow with inner HMC block.}
-    \end{figure}
-
-    Vivamus congue volutpat elit non semper. Praesent molestie nec erat ac
-    interdum. In quis suscipit erat. \textbf{Phasellus mauris felis, molestie
-    ac pharetra quis}, tempus nec ante. Donec finibus ante vel purus mollis
-    fermentum. Sed felis mi, pharetra eget nibh a, feugiat eleifend dolor. Nam
-    mollis condimentum purus quis sodales. Nullam eu felis eu nulla eleifend
-    bibendum nec eu lorem. Vivamus felis velit, volutpat ut facilisis ac,
-    commodo in metus.
-
-    \begin{enumerate}
-      \item \textbf{Morbi mauris purus}, egestas at vehicula et, convallis
-        accumsan orci. Orci varius natoque penatibus et magnis dis parturient
-        montes, nascetur ridiculus mus.
-      \item \textbf{Cras vehicula blandit urna ut maximus}. Aliquam blandit nec
-        massa ac sollicitudin. Curabitur cursus, metus nec imperdiet bibendum,
-        velit lectus faucibus dolor, quis gravida metus mauris gravida turpis.
-      \item \textbf{Vestibulum et massa diam}. Phasellus fermentum augue non
-        nulla accumsan, non rhoncus lectus condimentum.
-    \end{enumerate}
-
-  \end{block}
-
-  \begin{block}{Fusce aliquam magna velit}
-
-    Et rutrum ex euismod vel. Pellentesque ultricies, velit in fermentum
-    vestibulum, lectus nisi pretium nibh, sit amet aliquam lectus augue vel
-    velit. Suspendisse rhoncus massa porttitor augue feugiat molestie. Sed
-    molestie ut orci nec malesuada. Sed ultricies feugiat est fringilla
-    posuere.
-
-    \begin{figure}
-      \centering
-      \begin{tikzpicture}
-        \begin{axis}[
-            scale only axis,
-            no markers,
-            domain=0:2*pi,
-            samples=100,
-            axis lines=center,
-            axis line style={-},
-            ticks=none]
-          \addplot[red] {sin(deg(x))};
-          \addplot[blue] {cos(deg(x))};
-        \end{axis}
-      \end{tikzpicture}
-      \caption{Another figure caption.}
-    \end{figure}
-
-  \end{block}
-
-  \begin{block}{Nam cursus consequat egestas}
-
-    Nulla eget sem quam. Ut aliquam volutpat nisi vestibulum convallis. Nunc a
-    lectus et eros facilisis hendrerit eu non urna. Interdum et malesuada fames
-    ac ante \textit{ipsum primis} in faucibus. Etiam sit amet velit eget sem
-    euismod tristique. Praesent enim erat, porta vel mattis sed, pharetra sed
-    ipsum. Morbi commodo condimentum massa, \textit{tempus venenatis} massa
-    hendrerit quis. Maecenas sed porta est. Praesent mollis interdum lectus,
-    sit amet sollicitudin risus tincidunt non.
-
-    Etiam sit amet tempus lorem, aliquet condimentum velit. Donec et nibh
-    consequat, sagittis ex eget, dictum orci. Etiam quis semper ante. Ut eu
-    mauris purus. Proin nec consectetur ligula. Mauris pretium molestie
-    ullamcorper. Integer nisi neque, aliquet et odio non, sagittis porta justo.
-
-    \begin{itemize}
-      \item \textbf{Sed consequat} id ante vel efficitur. Praesent congue massa
-        sed est scelerisque, elementum mollis augue iaculis.
-        \begin{itemize}
-          \item In sed est finibus, vulputate
-            nunc gravida, pulvinar lorem. In maximus nunc dolor, sed auctor eros
-            porttitor quis.
-          \item Fusce ornare dignissim nisi. Nam sit amet risus vel lacus
-            tempor tincidunt eu a arcu.
-          \item Donec rhoncus vestibulum erat, quis aliquam leo
-            gravida egestas.
-        \end{itemize}
-      \item \textbf{Sed luctus, elit sit amet} dictum maximus, diam dolor
-        faucibus purus, sed lobortis justo erat id turpis.
-      \item \textbf{Pellentesque facilisis dolor in leo} bibendum congue.
-        Maecenas congue finibus justo, vitae eleifend urna facilisis at.
-    \end{itemize}
-
-  \end{block}
-
-\end{column}
-
-\separatorcolumn
-
-\begin{column}{\colwidth}
-
-  \begin{block}{A block containing some math}
-
-    Nullam non est elit. In eu ornare justo. Maecenas porttitor sodales lacus,
-    ut cursus augue sodales ac.
-
-    $$
-    \int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}
-    $$
-
-    Interdum et malesuada fames $\{1, 4, 9, \ldots\}$ ac ante ipsum primis in
-    faucibus. Cras eleifend dolor eu nulla suscipit suscipit. Sed lobortis non
-    felis id vulputate.
-
-    \heading{A heading inside a block}
-
-    Praesent consectetur mi $x^2 + y^2$ metus, nec vestibulum justo viverra
-    nec. Proin eget nulla pretium, egestas magna aliquam, mollis neque. Vivamus
-    dictum $\mathbf{u}^\intercal\mathbf{v}$ sagittis odio, vel porta erat
-    congue sed. Maecenas ut dolor quis arcu auctor porttitor.
-
-    \heading{Another heading inside a block}
-
-    Sed augue erat, scelerisque a purus ultricies, placerat porttitor neque.
-    Donec $P(y \mid x)$ fermentum consectetur $\nabla_x P(y \mid x)$ sapien
-    sagittis egestas. Duis eget leo euismod nunc viverra imperdiet nec id
-    justo.
-
-  \end{block}
-
-  \begin{block}{Nullam vel erat at velit convallis laoreet}
-
-    Class aptent taciti sociosqu ad litora torquent per conubia nostra, per
-    inceptos himenaeos. Phasellus libero enim, gravida sed erat sit amet,
-    scelerisque congue diam. Fusce dapibus dui ut augue pulvinar iaculis.
-
-    \begin{table}
-      \centering
-      \begin{tabular}{l r r c}
-        \toprule
-        \textbf{First column} & \textbf{Second column} & \textbf{Third column} & \textbf{Fourth} \\
-        \midrule
-        Foo & 13.37 & 384,394 & $\alpha$ \\
-        Bar & 2.17 & 1,392 & $\beta$ \\
-        Baz & 3.14 & 83,742 & $\delta$ \\
-        Qux & 7.59 & 974 & $\gamma$ \\
-        \bottomrule
-      \end{tabular}
-      \caption{A table caption.}
-    \end{table}
-
-    Donec quis posuere ligula. Nunc feugiat elit a mi malesuada consequat. Sed
-    imperdiet augue ac nibh aliquet tristique. Aenean eu tortor vulputate,
-    eleifend lorem in, dictum urna. Proin auctor ante in augue tincidunt
-    tempor. Proin pellentesque vulputate odio, ac gravida nulla posuere
-    efficitur. Aenean at velit vel dolor blandit molestie. Mauris laoreet
-    commodo quam, non luctus nibh ullamcorper in. Class aptent taciti sociosqu
-    ad litora torquent per conubia nostra, per inceptos himenaeos.
-
-    Nulla varius finibus volutpat. Mauris molestie lorem tincidunt, iaculis
-    libero at, gravida ante. Phasellus at felis eu neque suscipit suscipit.
-    Integer ullamcorper, dui nec pretium ornare, urna dolor consequat libero,
-    in feugiat elit lorem euismod lacus. Pellentesque sit amet dolor mollis,
-    auctor urna non, tempus sem.
-
-  \end{block}
+  %   \begin{table}
+  %     \centering
+  %     \begin{tabular}{l r r c}
+  %       \toprule
+  %       \textbf{First column} & \textbf{Second column} & \textbf{Third column} & \textbf{Fourth} \\
+  %       \midrule
+  %       Foo & 13.37 & 384,394 & $\alpha$ \\
+  %       Bar & 2.17 & 1,392 & $\beta$ \\
+  %       Baz & 3.14 & 83,742 & $\delta$ \\
+  %       Qux & 7.59 & 974 & $\gamma$ \\
+  %       \bottomrule
+  %     \end{tabular}
+  %     \caption{A table caption.}
+  %   \end{table}
 
   \begin{block}{References}
-
     \nocite{*}
     \footnotesize{\bibliographystyle{plain}\bibliography{poster}}
-
   \end{block}
-
 \end{column}
-
 \separatorcolumn
 \end{columns}
 \end{frame}
-
 \end{document}
