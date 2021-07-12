@@ -17,6 +17,7 @@
 \usepackage{tikz}
 \usepackage{pgfplots}
 \usepackage{wrapfig}
+\usepackage{subcaption}
 \usepackage{mathtools}
 \pgfplotsset{compat=1.17}
 \graphicspath{{assets/}}
@@ -50,11 +51,12 @@
 
 \title{HMC with Normalizing Flows}
 
-\author{Sam Foreman\inst{1}}
+\author{Sam Foreman\inst{1}, Taku Izubuchi\inst{2} Luchang Jin\inst{3}, Xiao-Yong Jin\inst{1}, James C. Osborn\inst{1},
+Akio Tomiya\inst{3}}
 % \author{Alyssa P. Hacker \inst{1} \and Ben Bitdiddle \inst{2} \and Lem E. Tweakit \inst{2}}
 
 % \institute[shortinst]{\inst{1} Argonne National Laboratory \samelineand \inst{2} University of Connecticut}
-\institute[shortinst]{\inst{1} Argonne National Laboratory}
+\institute[shortinst]{\inst{1} Argonne National Laboratory \inst{2} RIKEN-BNL \inst{3} University of Connecticut}
 
 % ====================
 % Footer (optional)
@@ -159,51 +161,78 @@
     % which provides a measure of correlations between samples in our batch, and a value of \(1\) implies complete
     % independence.
   \end{block}
+  \begin{block}{2D U(1) Gauge Theory}
+    \begin{wrapfigure}{l}{.25\columnwidth}
+      \includegraphics[width=0.25\columnwidth]{assets/plaq.pdf}
+      \caption{\label{fig:plaquette}Plaquette}%, \(P\)}
+    \end{wrapfigure}
+    Let \(U_{\mu}(n) = e^{i x_{\mu}(n)} \in U(1)\), with \(x_{\mu}(n) \in \left[-\pi, \pi\right]\) denote the \emph{link
+    variables}, where \(x_{\mu}(n)\) is a link at the site \(n\) oriented in the direction \(\hat\mu\).
 
-  \begin{block}{Hamiltonian Monte Carlo (HMC)}
-  % \vspace{-1mm}
-  % \begin{block}{Hamiltonian Monte Carlo (HMC)}
-    % \textbf{\alert{Goal:}} Sample from (difficult) target distribution \(p(x)\propto e^{-S(x)}\). To do this, we construct a chain
-    % \(x_{0}\rightarrow x_{1}\rightarrow, \ldots, \rightarrow x_{N}\) such that \(x_{N}\sim p(x)\) as \(N\rightarrow
-    % \infty\).
+    We can write our target distribution, \(p(x)\), in terms of the Wilson action \(S(x)\) as
     %
-    % \heading{Method}
-    % \textbf{\alert{Method:}}
-      \begin{enumerate}
-        \item Introduce \(v \sim \mathcal{N}(0, \mathbb{I}_{n})\in \mathbb{R}^{n}\) and write the joint distribution:
-          \begin{equation}
-            p(x, v) = p(x) p(v)\propto e^{-S(x)}e^{-\frac{1}{2}v^{T}v} = e^{-H(x, v)}.
-          \end{equation}
-        \item Evolve the joint system \(\xi \equiv (\dot x, \dot v)\) using Hamilton's equations along
-          \(H=\mathrm{const}\).
-        \item Accept or reject the proposal configuration using the Metropolis-Hastings test.
-      \end{enumerate}
+    \begin{align}
+      p(x)&\propto e^{- S(x)}, \quad \text{where}\quad S(x) \equiv \sum_{P} 1 - \cos x_{P}\quad\text{and}\\
+      x_{P} &= x_{\mu}(n) + x_{\nu}(n+\hat{\mu})-x_{\mu}(n+\hat{\nu}) - x_{\nu}(n)
+    \end{align}
+    %
+    as shown in Figure.~\ref{fig:plaquette}.
+    %
+    % \begin{equation}
+    %   x_{P} = x_{\mu}(n) + x_{\nu}(n+\hat{\mu})-x_{\mu}(n+\hat{\nu}) - x_{\nu}(n)
+    % \end{equation}
+    %
+    For a given lattice configuration, we can define the \emph{topological charge} \(Q \in \mathbb{Z}\) as
+    %
+    \begin{equation}
+      Q = \frac{1}{2\pi}\sum_{P} \arg(x_{P}), \quad\text{where}\quad \arg(x_{P}) \in [-\pi,\pi]
+    \end{equation}
+  \end{block}
 
-      \begin{columns}[t]
-        % \separatorcolumn
-        \hspace{6ex}
-        % \heading{Leapfrog Integrator}
-        \begin{column}{0.35\columnwidth}
-          \textbf{\alert{Leapfrog Integrator:}}
-          \begin{enumerate}
-            \item \(\tilde{v} \leftarrow v - \frac{\varepsilon}{2}\partial_{x} S(x)\)
-            \item \(x'\leftarrow x+ \varepsilon \tilde{v}\)
-            \item \(v' \leftarrow \tilde{v} - \frac{\varepsilon}{2}\partial_{x} S(x')\)
-          \end{enumerate}
-        \end{column}
-        %
-        \begin{column}{0.65\columnwidth}
-          \textbf{\alert{Metropolis-Hastings:}}
-          \begin{equation*}
-            x_{i+1} = \begin{cases}%
-              x'\quad\text{&w/ prob.}\quad A(\xi'|\xi)\equiv \min\left\{1,\frac{p(\xi')}{p(\xi)}\left|\frac{\partial
-              \xi'}{\partial \xi^{T}}\right|\right\}\\
-                  x\quad\text{&w/ prob.}\quad \(1-A(\xi'|\xi)\).
-                \end{cases}
-          \end{equation*}
-        \end{column}
-      \end{columns}
-    \end{block}
+  % \begin{block}{Hamiltonian Monte Carlo (HMC)}
+  % % \vspace{-1mm}
+  % % \begin{block}{Hamiltonian Monte Carlo (HMC)}
+  %   % \textbf{\alert{Goal:}} Sample from (difficult) target distribution \(p(x)\propto e^{-S(x)}\). To do this, we construct a chain
+  %   % \(x_{0}\rightarrow x_{1}\rightarrow, \ldots, \rightarrow x_{N}\) such that \(x_{N}\sim p(x)\) as \(N\rightarrow
+  %   % \infty\).
+  %   %
+  %   % \heading{Method}
+  %   % \textbf{\alert{Method:}}
+  %     \begin{enumerate}
+  %       \item Introduce \(v \sim \mathcal{N}(0, \mathbb{I}_{n})\in \mathbb{R}^{n}\) and write the joint distribution:
+  %         \begin{equation}
+  %           p(x, v) = p(x) p(v)\propto e^{-S(x)}e^{-\frac{1}{2}v^{T}v} = e^{-H(x, v)}.
+  %         \end{equation}
+  %       \item Evolve the joint system \(\xi \equiv (\dot x, \dot v)\) using Hamilton's equations along
+  %         \(H=\mathrm{const}\).
+  %       \item Accept or reject the proposal configuration using the Metropolis-Hastings test.
+  %     \end{enumerate}
+  %
+  %     \begin{columns}[t]
+  %       % \separatorcolumn
+  %       \hspace{6ex}
+  %       % \heading{Leapfrog Integrator}
+  %       \begin{column}{0.35\columnwidth}
+  %         \textbf{\alert{Leapfrog Integrator:}}
+  %         \begin{enumerate}
+  %           \item \(\tilde{v} \leftarrow v - \frac{\varepsilon}{2}\partial_{x} S(x)\)
+  %           \item \(x'\leftarrow x+ \varepsilon \tilde{v}\)
+  %           \item \(v' \leftarrow \tilde{v} - \frac{\varepsilon}{2}\partial_{x} S(x')\)
+  %         \end{enumerate}
+  %       \end{column}
+  %       %
+  %       \begin{column}{0.65\columnwidth}
+  %         \textbf{\alert{Metropolis-Hastings:}}
+  %         \begin{equation*}
+  %           x_{i+1} = \begin{cases}%
+  %             x'\quad\text{&w/ prob.}\quad A(\xi'|\xi)\equiv \min\left\{1,\frac{p(\xi')}{p(\xi)}\left|\frac{\partial
+  %             \xi'}{\partial \xi^{T}}\right|\right\}\\
+  %                 x\quad\text{&w/ prob.}\quad \(1-A(\xi'|\xi)\).
+  %               \end{cases}
+  %         \end{equation*}
+  %       \end{column}
+  %     \end{columns}
+  %   \end{block}
 
 \end{column}
 
@@ -247,12 +276,15 @@
     expectation value simplifies to 
     %
     \begin{equation}
-      \langle \mathcal{O}\rangle = \frac{1}{\mathcal{Z}}\int dz\, \mathcal{O}(f(z)).
+      \langle \mathcal{O}\rangle = \frac{1}{\mathcal{Z^{*}}}\int dz\, \mathcal{O}(f(z))\quad\text{where}\quad
+      \frac{1}{\mathcal{Z^{*}}} = \frac{1}{\mathcal{Z}}\exp(-\mathrm{const}).
     \end{equation}
     %
   % \end{block}
   % \begin{block}{HMC with Normalizing Flow}
-    \heading{HMC with Normalizing Flows}
+    % \heading{HMC with Normalizing Flows}
+  \end{block}
+  \begin{block}{HMC with Normalizing Flows}
     We can implement the trivializing map defined above using a normalizing flow model.
     %
     For conjugate momenta \(\pi\), we can write the Hamiltonian 
@@ -260,11 +292,12 @@
       H(z, \pi) = \frac{1}{2}\pi^{2} + S(f(z)) - \log|\det J(f(z))|
     \end{equation}
     and the associated equations of motion as 
-    \begin{equation}
-      \dot z = \frac{\partial H}{\partial z} = \pi,%
-        \quad\text{and}\quad%
-        \dot{\pi} = -\frac{\partial H}{\partial z} = -J(z) S'(f(z)) - \log|\det J(z)|.
-    \end{equation}
+    \begin{align}
+      \dot z &= \frac{\partial H}{\partial \pi} = \pi\\
+        % \quad\text{and}\quad%
+      \dot{\pi} &= -J(z)S'(f(z)) + \mathrm{tr}\left[J^{-1}\frac{d}{dz}J\right]
+        % \dot{\pi} = -\frac{\partial H}{\partial z} = -J(z) S'(f(z)) - \log|\det J(z)|.
+    \end{align}
     %
     If we introduce a change of variables \(\pi = J(z)\rho = J(f^{-1}(x))\rho\) and \(z = f^{-1}(x)\), the determinant
     of the Jacobian matrix reduces to \(1\) and we obtain the modified Hamiltonian
@@ -301,32 +334,36 @@
 \separatorcolumn
 
 \begin{column}{\colwidth}
-  \begin{block}{2D U(1) Gauge Theory}
-    \begin{wrapfigure}{l}{.33\columnwidth}
-      \includegraphics[width=0.33\columnwidth]{assets/plaq.pdf}
-      \caption{\label{fig:plaquette}Plaquette}%, \(P\)}
-    \end{wrapfigure}
-    Let \(U_{\mu}(n) = e^{i x_{\mu}(n)} \in U(1)\), with \(x_{\mu}(n) \in \left[-\pi, \pi\right]\) denote the \emph{link
-    variables}, where \(x_{\mu}(n)\) is a link at the site \(n\) oriented in the direction \(\hat\mu\).
-
-    We can write our target distribution, \(p(x)\), in terms of the Wilson action \(S(x)\) as
-    %
-    \begin{align}
-      p(x)&\propto e^{- S(x)}, \quad \text{where}\quad S(x) \equiv \sum_{P} 1 - \cos x_{P}\quad\text{and}\\
-      x_{P} &= x_{\mu}(n) + x_{\nu}(n+\hat{\mu})-x_{\mu}(n+\hat{\nu}) - x_{\nu}(n)
-    \end{align}
-    %
-    as shown in Figure.~\ref{fig:plaquette}.
-    %
-    % \begin{equation}
-    %   x_{P} = x_{\mu}(n) + x_{\nu}(n+\hat{\mu})-x_{\mu}(n+\hat{\nu}) - x_{\nu}(n)
-    % \end{equation}
-    %
-    For a given lattice configuration, we can define the \emph{topological charge} \(Q \in \mathbb{Z}\) as
-    %
-    \begin{equation}
-      Q = \frac{1}{2\pi}\sum_{P} \arg(x_{P}), \quad\text{where}\quad \arg(x_{P}) \in [-\pi,\pi]
-    \end{equation}
+  \begin{block}{Results}
+    % \heading{HMC}
+    \begin{figure}
+      \begin{subfigure}{0.66\columnwidth}
+        \centering
+        \includegraphics[width=\columnwidth]{assets/hmc/dq_8x8_beta7_hmc_live.png}
+        \caption{\label{fig:hmc8beta7}\(8\times8\) lattice, HMC}
+      \end{subfigure}
+      \begin{subfigure}{0.66\columnwidth}
+        \centering
+        \includegraphics[width=\columnwidth]{assets/hmc/dq_16x16_beta7_hmc_live.png}
+        \caption{\label{fig:hmc16beta7}\(16\times16\) lattice, HMC}
+      \end{subfigure}
+      \caption{Topological charge vs MC trajectory for HMC, demonstrating \emph{topological freezing} resulting in large
+      integrated autocorrelation times.}
+    \end{figure}
+    \begin{figure}
+      \begin{subfigure}{0.66\columnwidth}
+        \centering
+          \includegraphics[width=\columnwidth]{assets/fthmc/beta7/dq_8x8_beta7_fthmc_live.png}
+          \caption{\label{fig:fthmc8beta7}\(8\times8\) lattice, HMC with Normalizing Flow}
+      \end{subfigure}
+      \begin{subfigure}{0.66\columnwidth}
+        \centering
+        \includegraphics[width=\columnwidth]{assets/fthmc/beta7/dq_16x16_beta7_fthmc_live.png}
+        \caption{\label{fig:fthmc16beta7}\(16\times16\) lattice, HMC with Normalizing Flow}
+      \end{subfigure}
+      \caption{Topological charge vs MC trajectory for ftHMC demonstrating an improvement in the topological tunneling,
+      indicating an improvement against HMC.}
+    \end{figure}
   \end{block}
   %   \begin{table}
   %     \centering
