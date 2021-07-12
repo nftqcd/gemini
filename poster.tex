@@ -96,26 +96,18 @@
       p(x) = r(z)\left|\det{\frac{\partial z}{\partial x}}\right|
            = r{(f^{-1}(x))}\left|\det{\frac{\partial f^{-1}}{\partial x}}\right|
     \end{equation}
+    %
     Where \(r(z)\) is the (simple) prior density, and our goal is to generate independent samples from the (difficult)
     target distribution \(p(x)\).
     %
     This can be done using \emph{normalizing flows} to construct a model density \(q(x)\) that approximates the target
     distribution, i.e. \(q(\cdot)\approx p(\cdot)\) for a suitably-chosen flow \(f\).
     %
-    % \begin{wrapfigure}{r}{0.6\columnwidth}
     \begin{figure}%{r}{0.6\columnwidth}
       \includegraphics[width=0.66\columnwidth]{assets/flow_model6}
       \caption{\label{fig:flow_model}Using a Flow to generate data \(x'\). Image adapted from~\cite{weng2018flow}}
-      % \vspace{-0.1ex}
     \end{figure}
-    %
-    % \begin{figure}
-    %   \centering
-    %   \includegraphics[width=0.66\columnwidth]{assets/flow_model6}
-    %   \caption{Using a Flow to generate data \(x'\). Image adapted from~\cite{weng2018flow}}
-    % \end{figure}
-    %
-    %
+
     We can construct a normalizing flow by composing multiple invertible functions \(f_{i}\) so that \(x\equiv [f_1\circ
     f_{2}\circ \cdots \circ f_{K}](z)\).
     %
@@ -187,39 +179,32 @@
         \item Accept or reject the proposal configuration using the Metropolis-Hastings test.
       \end{enumerate}
 
-  \begin{columns}[t]
-    % \separatorcolumn
-    \hspace{6ex}
-    \begin{column}{0.35\columnwidth}
-      % \heading{Leapfrog Integrator}
-      \textbf{\alert{Leapfrog Integrator:}}
-      \begin{enumerate}
-        \item \(\tilde{v} \leftarrow v - \frac{\varepsilon}{2}\partial_{x} S(x)\)
-        \item \(x'\leftarrow x+ \varepsilon \tilde{v}\)
-        \item \(v' \leftarrow \tilde{v} - \frac{\varepsilon}{2}\partial_{x} S(x')\)
-        % \item Half-step (\(v\)): \(\tilde v = v - \frac{\varepsilon}{2}\partial_{x} S(x)\)
-        % \item Full-step (\(x\)): \(x' = x + \varepsilon \tilde v\)
-        % \item Half-step (\(v\)): \(v' = \tilde v - \frac{\varepsilon}{2} \partial_{x} S(x')\)
-      \end{enumerate}
-    \end{column}
-    %
-    \begin{column}{0.65\columnwidth}
-      % \heading{Metropolis-Hastings}
-      \textbf{\alert{Metropolis-Hastings:}}
-      \begin{equation}
-      % $$
-      \[
-        x_{i+1} = \begin{cases}%
-          x'\quad\text{w/ prob.}\quad A(\xi'|\xi)\equiv \min\left\{1,\frac{p(\xi')}{p(\xi)}\left|\frac{\partial
-            \xi'}{\partial \xi^{T}}\right|\right\}\\
-            x\quad\text{w/ prob.}\quad \(1-A(\xi'|\xi)\).
-        \end{cases}
-      % \end{equation}
-      % $$
-      \]
-    \end{column}
-  \end{columns}
-  \end{block}
+      \begin{columns}[t]
+        % \separatorcolumn
+        \hspace{6ex}
+        % \heading{Leapfrog Integrator}
+        \begin{column}{0.35\columnwidth}
+          \textbf{\alert{Leapfrog Integrator:}}
+          \begin{enumerate}
+            \item \(\tilde{v} \leftarrow v - \frac{\varepsilon}{2}\partial_{x} S(x)\)
+            \item \(x'\leftarrow x+ \varepsilon \tilde{v}\)
+            \item \(v' \leftarrow \tilde{v} - \frac{\varepsilon}{2}\partial_{x} S(x')\)
+          \end{enumerate}
+        \end{column}
+        %
+        \begin{column}{0.65\columnwidth}
+          \textbf{\alert{Metropolis-Hastings:}}
+          \begin{equation*}
+            x_{i+1} = \begin{cases}%
+              x'\quad\text{&w/ prob.}\quad A(\xi'|\xi)\equiv \min\left\{1,\frac{p(\xi')}{p(\xi)}\left|\frac{\partial
+              \xi'}{\partial \xi^{T}}\right|\right\}\\
+                  x\quad\text{&w/ prob.}\quad \(1-A(\xi'|\xi)\).
+                \end{cases}
+          \end{equation*}
+        \end{column}
+      \end{columns}
+    \end{block}
+
 \end{column}
 
 \separatorcolumn
