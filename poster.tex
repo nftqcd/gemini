@@ -50,6 +50,7 @@
 % ====================
 
 \title{HMC with Normalizing Flows}
+% \logoright{\includegraphics{assets/anl_logo.svg}}
 
 \author{Sam Foreman\inst{1}, Taku Izubuchi\inst{2} Luchang Jin\inst{3}, Xiao-Yong Jin\inst{1}, James C. Osborn\inst{1},
 Akio Tomiya\inst{3}}
@@ -63,9 +64,11 @@ Akio Tomiya\inst{3}}
 % ====================
 
 \footercontent{
-  % \href{https://indico.cern.ch/event/1006302/}{Lattice 21} \hfill
-  The 38th International Symposium on Lattice Field Theory \hfill
-  % The 38th International Symposium on Lattice Field Theory--- XYZ-1234 \hfill
+  % \centering
+  % The 38th International Symposium on Lattice Field Theory, 2021 \hspace*{\fill}
+  % \separatorcolumn
+  \href{https://github.com/nftqcd/fthmc}{github.com/nftqcd/fthmc} \hspace*{\fill}
+  \separatorcolumn
   \href{mailto:foremans@anl.gov}{foremans@anl.gov}
 }
 % (can be left out to remove footer)
@@ -300,7 +303,26 @@ Akio Tomiya\inst{3}}
     %   \includegraphics[width=\columnwidth]{assets/ftHMC}
     %   \caption{\label{fig:ftHMC}Normalizing Flow with inner HMC block.}
     % \end{figure}
+
+  % \begin{alertblock}{Acknowledgements}
+  \vspace{\baselineskip}
+  \centering{\alert{\textbf{Acknowledgements}}}
+
+    \begin{footnotesize}
+      \alert{This research used resources of the Argonne Leadership Computing Facility, which is a DOE Office of Science User
+      Facility supported under Contract DE-AC02-06CH11357.  This research was supported by the Exascale Computing
+      Project (17-SC-20-SC), a collaborative effort of the U.S. Department of Energy Office of Science and the National
+    Nuclear Security Administration.}
+      % This research used resources of the Argonne Leadership Computing Facility, which is a DOE Office of Science User
+      % Facility supported under Contract DE-AC02-06CH11357.  This research was supported by the Exascale Computing
+      % Project (17-SC-20-SC), a collaborative effort of the U.S. Department of Energy Office of Science and the National
+      % Nuclear Security Administration.  This work describes objective technical results and analysis. Any subjective
+      % views or opinions that might be expressed in the work do not necessarily represent the views of the U.S.  DOE or
+      % the United States Government.
+  \end{footnotesize}
+  % \end{alertblock}
   \end{block}
+
 
 \end{column}
 
@@ -331,39 +353,46 @@ Akio Tomiya\inst{3}}
     For a given lattice configuration, we can define the \emph{topological charge} \(Q \in \mathbb{Z}\) as
     %
     \begin{equation}
-      Q = \frac{1}{2\pi}\sum_{P} \arg(x_{P}), \quad\text{where}\quad \arg(x_{P}) \in [-\pi,\pi]
+      Q = \frac{1}{2\pi}\sum_{P} \arg(x_{P}), \quad\text{where}\quad \arg(x_{P}) \in [-\pi,\pi].
     \end{equation}
+    %
+    We are interested in how this quantity evolves over a finite length Markov Chain, in particular we can define the
+    \emph{tunneling rate}, \(dQ\) as
+    \begin{equation}
+      dQ = \sqrt{(Q_{i+1} - Q_{i})^2}
+    \end{equation}
+    where the difference is between subsequent states in the chain.
   \end{block}
 
   \begin{block}{Results}
     % \heading{HMC}
     \begin{figure}
-      \begin{subfigure}{0.45\columnwidth}
+      \begin{subfigure}{0.48\columnwidth}
         \centering
         \includegraphics[width=\columnwidth]{assets/hmc/dq_8x8_beta7_hmc_live1.png}
-        \caption{\label{fig:hmc8beta7}\(8\times8\) lattice, HMC}
+        \caption{\label{fig:hmc8beta7}\(8\times8\) lattice, HMC at \(\beta = 7\)}
       \end{subfigure}
-      \begin{subfigure}{0.45\columnwidth}
+      \begin{subfigure}{0.48\columnwidth}
         \centering
         \includegraphics[width=\columnwidth]{assets/hmc/dq_16x16_beta7_hmc_live.png}
-        \caption{\label{fig:hmc16beta7}\(16\times16\) lattice, HMC}
+        \caption{\label{fig:hmc16beta7}\(16\times16\) lattice, HMC at \(\beta = 7\)}
       \end{subfigure}
-      \caption{Topological charge vs MC trajectory for HMC, demonstrating \emph{topological freezing} resulting in large
+      \caption{Tunneling rate vs MC trajectory for HMC, demonstrating \emph{topological freezing} resulting in large
       integrated autocorrelation times.}
     \end{figure}
     \begin{figure}
-      \begin{subfigure}{0.45\columnwidth}
+      \begin{subfigure}{0.48\columnwidth}
         \centering
-          \includegraphics[width=\columnwidth]{assets/fthmc/beta7/dq_8x8_beta7_fthmc_live.png}
-          \caption{\label{fig:fthmc8beta7}\(8\times8\) lattice, HMC with Normalizing Flow}
+          \includegraphics[width=\columnwidth]{assets/fthmc/beta7/dq_8x8_beta7_fthmc_live1.png}
+          \caption{\label{fig:fthmc8beta7}\(8\times8\) lattice, HMC \(+\) Normalizing Flow at \(\beta = 7\)}
       \end{subfigure}
-      \begin{subfigure}{0.45\columnwidth}
+      \begin{subfigure}{0.48\columnwidth}
         \centering
         \includegraphics[width=\columnwidth]{assets/fthmc/beta7/dq_16x16_beta7_fthmc_live.png}
-        \caption{\label{fig:fthmc16beta7}\(16\times16\) lattice, HMC with Normalizing Flow}
+        \caption{\label{fig:fthmc16beta7}\(16\times16\) lattice, HMC \(+\) Normalizing Flow at \(\beta = 7\)}
       \end{subfigure}
-      \caption{Topological charge vs MC trajectory for ftHMC demonstrating an improvement in the topological tunneling,
-      indicating an improvement against HMC.}
+      \caption{Tunneling rate vs MC trajectory for HMC with trained Normalizing Flow, demonstrating an improved
+      tunneling rate compared to HMC.}
     \end{figure}
   \end{block}
   %   \begin{table}
@@ -380,7 +409,6 @@ Akio Tomiya\inst{3}}
   %     \end{tabular}
   %     \caption{A table caption.}
   %   \end{table}
-
   \begin{block}{References}
     \nocite{*}
     \footnotesize{\bibliographystyle{plain}\bibliography{poster}}
